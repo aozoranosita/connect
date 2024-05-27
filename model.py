@@ -1,29 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.optim as optim
-from torch.utils.data import DataLoader, Dataset
-import numpy as np
-import h5py
-from sklearn.model_selection import train_test_split
-
-class ConnectomicsDataset(Dataset):
-    def __init__(self, h5_file, transform=None):
-        self.h5_file = h5_file
-        self.transform = transform
-        with h5py.File(h5_file, 'r') as f:
-            self.data = f['raw'][:]
-            self.labels = f['label'][:]
-
-    def __len__(self):
-        return len(self.data)
-
-    def __getitem__(self, idx):
-        image = self.data[idx]
-        label = self.labels[idx]
-        if self.transform:
-            image = self.transform(image)
-            label = self.transform(label)
-        return torch.tensor(image, dtype=torch.float32), torch.tensor(label, dtype=torch.float32)
 
 class ResidualBlock(nn.Module):
     def __init__(self, in_channels, out_channels):
@@ -37,10 +13,10 @@ class ResidualBlock(nn.Module):
         self.bn3 = nn.BatchNorm3d(out_channels)
 
     def forward(self, x):
-        residual = x
         out = self.conv1(x)
         out = self.bn1(out)
         out = self.relu(out)
+        residual = out
         out = self.conv2(out)
         out = self.bn2(out)
         out = self.relu(out)
