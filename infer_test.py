@@ -23,37 +23,43 @@ def agglomerate(affinity_map, threshold=0.5, min_size=100):
     # Generate markers for watershed
     markers, _ = ndi.label(local_maxi)
     
+    # Ensure markers and mask have the same shape
+    if markers.shape != mask.shape:
+        raise ValueError(f"Shape mismatch: markers shape {markers.shape}, mask shape {mask.shape}")
+    
     # Perform watershed segmentation
     labels = watershed(-distance_transform, markers, mask=mask)
     
     return labels
 
-if __name__=="__main__":
+if __name__ == "__main__":
     # Example usage
-    affinity_map = np.array([ 
-        [[[[1, 0, 1, 0,],
-        [1, 0, 0, 0,] ,
-        [1, 0, 1, 0,] ,
-        [1, 0, 1, 0,]] ,
-        [[1, 0, 1, 0,] ,
-        [1, 0, 0, 0,] ,
-        [1, 0, 1, 0,] ,
-        [1, 0, 1, 0,]]] ,
-        [[[1, 1, 1, 0,] ,
-        [0, 0, 0, 1,] ,
-        [1, 1, 1, 1,] ,
-        [0, 0, 0, 0,]] ,
-        [[1, 1, 1, 0,] ,
-        [0, 0, 0, 1,] ,
-        [1, 1, 1, 1,] ,
-        [0, 0, 0, 0,]]] ,
-        [[[1, 1, 1, 1,] ,
-        [1, 1, 1, 1,] ,
-        [1, 1, 1, 1,] ,
-        [1, 1, 1, 1,]] ,
-        [[0, 0, 0, 0,] ,
-        [0, 0, 0, 0,] ,
-        [0, 0, 0, 0,] ,
-        [0, 0, 0, 0,]]]]])
+    affinity_map = np.array([
+        [[[1, 0, 1, 0],
+          [1, 0, 0, 0],
+          [1, 0, 1, 0],
+          [1, 0, 1, 0]],
+         [[1, 0, 1, 0],
+          [1, 0, 0, 0],
+          [1, 0, 1, 0],
+          [1, 0, 1, 0]]],
+        [[[1, 1, 1, 0],
+          [0, 0, 0, 1],
+          [1, 1, 1, 1],
+          [0, 0, 0, 0]],
+         [[1, 1, 1, 0],
+          [0, 0, 0, 1],
+          [1, 1, 1, 1],
+          [0, 0, 0, 0]]],
+        [[[1, 1, 1, 1],
+          [1, 1, 1, 1],
+          [1, 1, 1, 1],
+          [1, 1, 1, 1]],
+         [[0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0]]]
+    ])
   
     segmentation = agglomerate(affinity_map[0])
+    print(segmentation)

@@ -49,7 +49,7 @@ for epoch in range(num_epochs):
     
     print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss/len(train_loader)}')
     
-    # 検証
+    # evaluation
     model.eval()
     val_loss = 0.0
     with torch.no_grad():

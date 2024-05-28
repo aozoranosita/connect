@@ -3,13 +3,12 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
 import numpy as np
-import h5py
 from dataset import ConnectomicsDataset
 from model import ResidualSymmetricUNet3D
 
 # Load pre-trained model
 model = ResidualSymmetricUNet3D(1, 3)
-model.load_state_dict(torch.load('pretrained_model.pth'))
+model.load_state_dict(torch.load('residual_symmetric_unet3d.pth'))
 
 # Predict affinity maps
 with torch.no_grad():
