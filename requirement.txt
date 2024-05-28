@@ -1,0 +1,5 @@
+conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
+numpy
+pandas
+imageio 
+pip install volumentations-3D
