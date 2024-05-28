@@ -1,9 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader, Dataset
-import numpy as np
-import h5py
+from torch.utils.data import DataLoader 
+from torchvision.transforms import ToTensor
 from dataset import ConnectomicsDataset
 from model import ResidualSymmetricUNet3D
 
@@ -13,11 +12,11 @@ learning_rate = 0.001
 num_epochs = 2
 
 # データセットの読み込み
-train_dataset = ConnectomicsDataset('train_data.h5')
-val_dataset = ConnectomicsDataset('val_data.h5')
+train_dataset = ConnectomicsDataset('data/', "fold.csv", phase="train")
+val_dataset = ConnectomicsDataset("data/", "fold.csv", phase="val")
 
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+val_loader = DataLoader(val_dataset, batch_size=batch_size * 2, shuffle=False)
 
 # モデル、損失関数、オプティマイザの定義
 model = ResidualSymmetricUNet3D(1, 3).cuda()
@@ -38,7 +37,7 @@ for epoch in range(num_epochs):
         # Forward pass with mixed precision
         with torch.cuda.amp.autocast():
             outputs = model(images)
-            loss = criterion(outputs, labels.long())
+            loss = criterion(outputs, labels)
         # Backward pass with mixed precision
         scaler.scale(loss).backward()
         scaler.step(optimizer)
@@ -56,8 +55,9 @@ for epoch in range(num_epochs):
     with torch.no_grad():
         for images, labels in val_loader:
             images, labels = images.cuda(), labels.cuda()
-            outputs = model(images)
-            loss = criterion(outputs, labels.long())
+            with torch.cuda.amp.autocast():
+                outputs = model(images)
+                loss = criterion(outputs, labels)
             val_loss += loss.item()
     
     print(f'Validation Loss: {val_loss/len(val_loader)}')

@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from typing import Optional, List
 
 class ResidualBlock(nn.Module):
     def __init__(self, in_channels, out_channels):
@@ -53,26 +54,29 @@ class UpSample(nn.Module):
         return out
 
 class ResidualSymmetricUNet3D(nn.Module):
-    def __init__(self, in_channels, out_channels):
+    def __init__(self, in_channels: int = 1,
+                 out_channels: int = 3, #afinity map of 3d
+                filters: List[int] = [16, 32, 64, 128, 256]):
         super(ResidualSymmetricUNet3D, self).__init__()
-        self.down1 = ResidualBlock(in_channels, 32)
-        self.down2 = DownSample(32, 64)
-        self.down3 = ResidualBlock(64, 64)
-        self.down4 = DownSample(64, 128)
-        self.down5 = ResidualBlock(128, 128)
-        self.down6 = DownSample(128, 256)
-        self.down7 = ResidualBlock(256, 256)
-        self.down8 = DownSample(256, 512)
-        self.center = ResidualBlock(512, 512)
-        self.up1 = UpSample(512, 256)
-        self.up2 = ResidualBlock(512, 256)
-        self.up3 = UpSample(256, 128)
-        self.up4 = ResidualBlock(256, 128)
-        self.up5 = UpSample(128, 64)
-        self.up6 = ResidualBlock(128, 64)
-        self.up7 = UpSample(64, 32)
-        self.up8 = ResidualBlock(64, 32)
-        self.out = nn.Conv3d(32, out_channels, kernel_size=1)
+        self.down1 = ResidualBlock(in_channels, filters[0])
+        self.down2 = DownSample(filters[0], filters[1])
+        self.down3 = ResidualBlock(filters[1], filters[1])
+        self.down4 = DownSample(filters[1],filters[2])
+        self.down5 = ResidualBlock(filters[2], filters[2])
+        self.down6 = DownSample(filters[2], filters[3])
+        self.down7 = ResidualBlock(filters[3], filters[3])
+        self.down8 = DownSample(filters[3], filters[4])
+        self.center = ResidualBlock(filters[4], filters[4])
+        self.up1 = UpSample(filters[4], filters[3])
+        self.up2 = ResidualBlock(filters[4], filters[3])
+        self.up3 = UpSample(filters[3], filters[2])
+        self.up4 = ResidualBlock(filters[3], filters[2])
+        self.up5 = UpSample(filters[2], filters[1])
+        self.up6 = ResidualBlock(filters[2], filters[1])
+        self.up7 = UpSample(filters[1], filters[0])
+        self.up8 = ResidualBlock(filters[1], filters[0])
+        self.out = nn.Conv3d(filters[0], out_channels, kernel_size=1)
+        # for output, should I use bn and activatoin?
 
     def forward(self, x):
         down1 = self.down1(x)

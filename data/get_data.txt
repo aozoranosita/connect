@@ -1,0 +1,3 @@
+download SNEMI dataset to image folder
+wget http://rhoana.rc.fas.harvard.edu/dataset/snemi.zip
+Using image_split_for_dataset.py , img folder and label folder will be made
