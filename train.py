@@ -9,8 +9,8 @@ import pickle
 
 # ハイパーパラメータの設定
 batch_size = 16
-learning_rate = 0.001
-num_epochs = 2
+learning_rate = 0.004
+num_epochs = 4
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
@@ -33,6 +33,7 @@ scaler = torch.cuda.amp.GradScaler()
 # トレーニングループ
 Loss, Val_loss = [], []
 min_loss = 1 << 15
+best = 0
 for epoch in range(num_epochs):
     model.train()
     running_loss = 0.0
@@ -62,7 +63,7 @@ for epoch in range(num_epochs):
     val_loss = 0.0
     with torch.no_grad():
         for images, labels in val_loader:
-            images, labels = images.to(device), labels.cuda(device)
+            images, labels = images.to(device), labels.to(device)
             with torch.cuda.amp.autocast():
                 outputs = model(images)
                 loss = criterion(outputs, labels)
@@ -75,6 +76,9 @@ for epoch in range(num_epochs):
 
     Val_loss.append(loss)
     print(f'Validation Loss: {loss}')
+    
+    if epoch - best > 6: #early stopping
+        break
 
 torch.save(best_weight, f"model/Unet3d_{best}.pth")
 
