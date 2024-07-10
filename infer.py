@@ -5,23 +5,41 @@ from torch.utils.data import DataLoader, Dataset
 import numpy as np
 from dataset import ConnectomicsDataset
 from model import ResidualSymmetricUNet3D
+import imageio
 
-# Load pre-trained model
-model = ResidualSymmetricUNet3D(1, 3)
-model.load_state_dict(torch.load('residual_symmetric_unet3d.pth'))
+MAX_SIZE = (128,128,128)
+DATA = "../image/test-input.tif"
+WEIGHT  = 'residual_symmetric_unet3d.pth'
+SAVE_PATH = "../pred/test.npy"
 
-# Predict affinity maps
-with torch.no_grad():
-    input_image = torch.from_numpy(em_image).unsqueeze(0).unsqueeze(0).float()
-    affinity_maps = model(input_image)
+def fitsize(imgsize, max_size):
 
-# Step 2: Agglomerate Affinity Maps
-import waterz
 
-# Normalize affinity maps to [0, 1] range
-affinities = affinity_maps.squeeze().numpy() / 255.0
+if __name__=="__main__":
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
+        
+    # Load pre-trained model
+    model = ResidualSymmetricUNet3D(1, 3)
+    model.load_state_dict(torch.load(WEIGHT))
 
-# Agglomerate using waterz
-seg_thresholds = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 
-                  0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95]
-seg = waterz.agglomerate(affinities, seg_thresholds)
+    image = imageio.volread(DATA) #big block
+
+    # input image is size 128**3, no overlap
+    # minimun size is 16 if model is depth of 4
+
+
+    list_aff = []
+    for pos in glid:
+        x, x_, y, y_, z, z_ = pos
+        img = image[x:x_, y,y_, z,z_]
+
+        # Predict affinity maps
+        with torch.no_grad():
+            input = torch.tensor(img, dtype=torch.float16).unsqueeze(0)
+            affinity_map = model(input)
+        
+        list_aff.append(affinity_map)
+
+    
+    np.save(affinity_maps, "../pred/test.npy")

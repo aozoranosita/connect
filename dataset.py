@@ -14,7 +14,7 @@ def get_augmentation(patch_size):
     return Compose([
         Rotate((-15,15),(-15,15),(-15,15)),
         RandomCropFromBorders(crop_value=0.1, p=0.5),
-        ElasticTransform((0, 0.25), interpolation=2, p=0.1),#time consuming
+        #ElasticTransform((0, 0.25), interpolation=2, p=0.1),#time consuming
         Resize(patch_size,interpolation=1, resize_type=0, always_apply=True, p=1.0),
         Normalize(always_apply=True),
         Flip(0, p=0.5),
